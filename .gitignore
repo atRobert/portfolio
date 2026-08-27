@@ -1,0 +1,12 @@
+.pnpm-store/
+.pnpm-cache/
+.pnpm-state/
+node_modules/
+dist/
+.env
+.env.local
+.DS_Store
+Thumbs.db
+work/
+outputs/
+.local-git/

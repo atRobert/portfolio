@@ -1,0 +1,3 @@
+# Ask all compliant crawlers, including AI crawlers, not to access this site.
+User-agent: *
+Disallow: /
