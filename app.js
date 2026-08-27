@@ -46,12 +46,13 @@ aboutTabs.forEach((tab, index) => {
 if (aboutStory) setAboutMode(aboutStory.dataset.mode);
 
 const workCarousel = document.querySelector("[data-work-carousel]");
+const workCarouselViewport = document.querySelector(".work-carousel-viewport");
 const workTrack = document.querySelector("[data-work-track]");
 const workSlides = workTrack ? [...workTrack.querySelectorAll(".project-card")] : [];
 const workDots = [...document.querySelectorAll("[data-work-dot]")];
 const workCount = document.querySelector("[data-work-count]");
 let activeWorkSlide = 0;
-let workSwipeStartX = null;
+let workSwipe = null;
 
 function setWorkSlide(nextIndex, source = "control") {
   if (!workTrack || !workSlides.length) return;
@@ -97,16 +98,30 @@ workCarousel?.addEventListener("keydown", (event) => {
   setWorkSlide(activeWorkSlide + (event.key === 'ArrowRight' ? 1 : -1), "keyboard");
 });
 
-workCarousel?.addEventListener("pointerdown", (event) => {
-  if (event.pointerType === "touch") workSwipeStartX = event.clientX;
+workCarouselViewport?.addEventListener("pointerdown", (event) => {
+  if (!event.isPrimary || event.button !== 0 || event.target.closest("a, button")) return;
+
+  workSwipe = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+  };
+  workCarouselViewport.setPointerCapture?.(event.pointerId);
 });
 
-workCarousel?.addEventListener("pointerup", (event) => {
-  if (workSwipeStartX === null || event.pointerType !== "touch") return;
-  const swipeDistance = event.clientX - workSwipeStartX;
-  workSwipeStartX = null;
-  if (Math.abs(swipeDistance) < 50) return;
-  setWorkSlide(activeWorkSlide + (swipeDistance < 0 ? 1 : -1), "swipe");
+workCarouselViewport?.addEventListener("pointerup", (event) => {
+  if (!workSwipe || event.pointerId !== workSwipe.pointerId) return;
+
+  const swipeDistanceX = event.clientX - workSwipe.startX;
+  const swipeDistanceY = event.clientY - workSwipe.startY;
+  workSwipe = null;
+
+  if (Math.abs(swipeDistanceX) < 44 || Math.abs(swipeDistanceX) <= Math.abs(swipeDistanceY) * 1.15) return;
+  setWorkSlide(activeWorkSlide + (swipeDistanceX < 0 ? 1 : -1), "swipe");
+});
+
+workCarouselViewport?.addEventListener("pointercancel", () => {
+  workSwipe = null;
 });
 
 setWorkSlide(0, "initial");
